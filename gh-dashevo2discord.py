@@ -3,6 +3,7 @@ import simplejson as json
 from jsondiff import diff
 import sys
 import time
+import datetime
 
 # src
 eventUrl = "https://api.github.com/users/dashevo/events/public"
@@ -65,7 +66,8 @@ while True:
                 webhook_url, myjson,
                 headers={'Content-Type': 'application/json'}
             )
-        # print response
+        print datetime.datetime.now()
+        print response
         # exit()
 
     firstRun = False
