@@ -13,6 +13,8 @@ if f.mode == 'r':
     webhook_url = f.read()
 f.close()
 
+# webhook_url = ""
+
 modifiedSince = ''
 curId = 0
 firstRun = False  # set True to skip existing data
@@ -29,7 +31,7 @@ while True:
         else:
             time.sleep(60)  # only 60/hour api calls on github-events allowed
             continue
-        
+
         ## fetch github public events json file
         response = requests.get(eventUrl)
         print 'Github Public Events response: ' + str(response)
@@ -39,10 +41,12 @@ while True:
         processedId = curId
 
         for item in data[::-1]:  # start with last element
+            # time.sleep(2)
 
-            if processedId >= long(item['id']):
+            # if processedId >= long(item['id']):
+            if 11780129586 >= long(item['id']):
                 continue
-            else: 
+            else:
                 curId = item['id']
 
             msg = ''
@@ -72,8 +76,7 @@ while True:
                     msg += ('**__Author__:**        ' +
                             commit['author']['name'] + '\\n').decode('ascii')
                     msg += ('**Message:**    ' + commit['message']).encode(
-                        'ascii', 'ignore').decode('ascii').replace(
-                            '\\', '\\\\') + '\\n'
+                        'ascii', 'ignore').decode('ascii') + '\\n'
                     msg += ('**Link:**             ' + 'https://github.com/' +
                             item['repo']['name'] + '/commit/' + commit['sha'] +
                             '\\n')
@@ -92,7 +95,7 @@ while True:
                 msg += ('**Body:**       ' +
                         item['payload']['pull_request']['body']).encode(
                             'ascii', 'ignore').decode('ascii').replace(
-                                '\\', '\\\\') + '\\n'
+                                '\r\n', '\\n') + '\\n'
 
             if 'release' in item['payload']:
                 msg += ('**Link:**          ' +
@@ -103,7 +106,7 @@ while True:
                 msg += ('**Body:**       ' +
                         item['payload']['release']['body']).encode(
                             'ascii', 'ignore').decode('ascii').replace(
-                                '\\', '\\\\') + '\\n'
+                                '\r\n', '\\n') + '\\n'
 
             if 'issue' in item['payload']:
                 msg += ('**Link:**          ' +
@@ -114,14 +117,15 @@ while True:
                 msg += ('**Body:**       ' +
                         item['payload']['issue']['body']).encode(
                             'ascii', 'ignore').decode('ascii').replace(
-                                '\\', '\\\\') + '\\n'
+                                '\r\n', '\\n') + '\\n'
 
             ## PullRequestReviewCommentEvent
             if 'comment' in item['payload']:
                 msg += ('**Body:**            ' +
                         item['payload']['comment']['body']).encode(
-                            'ascii', 'ignore').decode('ascii').replace(
-                                '\\', '\\\\') + '\\n'
+                            'ascii', 'ignore').encode(
+                                'ascii', 'ignore').decode('ascii').replace(
+                                    '\r\n', '\\n').replace('"', '') + '\\n'
                 msg += ('**Link:**            ' +
                         item['payload']['comment']['html_url'] + '\\n')
 
@@ -129,7 +133,10 @@ while True:
 
             ## Debug local
             # print '======================'
-            # print msg
+            print ''
+            print msg
+            print ''
+
             # exit()
 
             if firstRun == False:
