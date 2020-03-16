@@ -88,8 +88,7 @@ while True:
                 msg += ('**Link:**             ' +
                         item['payload']['pull_request']['html_url'] + '\\n')
                 msg += ('**Title:**            ' +
-                        item['payload']['pull_request']['title'] +
-                        '\\n')
+                        item['payload']['pull_request']['title'] + '\\n')
                 msg += ('**Body:**       ' +
                         item['payload']['pull_request']['body']) + '\\n'
 
@@ -117,26 +116,41 @@ while True:
                         item['payload']['comment']['html_url'] + '\\n')
 
             msg += '**Created at:**  ' + item['created_at'] + '\\n'
-            
+
             ## escape some special characters for json object
-            msg = msg.replace('"', '\\"').replace('\r\n', '\\n').replace('\n', '\\n').encode('ascii', 'ignore').decode('ascii')
+            msg = msg.replace('"', '\\"').replace('\r\n', '\\n').replace(
+                '\n', '\\n').encode('ascii', 'ignore').decode('ascii')
 
             ## Debug local
             # print '======================'
             # print ''
             # print msg
             # print ''
-
             # exit()
 
             if firstRun == False:
-                myjson = '{"username": "GitHub-dashevo", "content": "' + msg + '"}'
-                response = requests.post(
-                    webhook_url,
-                    myjson,
-                    headers={'Content-Type': 'application/json'})
+                ## check if msg lenght > 2000 (max discord content chars) - cheers devs! :D
+                if len(msg) > 2000:
+                    m = (len(msg) / 2000) + 1
+                    for i in xrange(1, m):
+                        myjson = '{"username": "GitHub-dashevo", "content": "' + msg[
+                            ((i - 1) * 2000):(i * 2000)] + '"}'
+                        response = requests.post(
+                            webhook_url,
+                            myjson,
+                            headers={'Content-Type': 'application/json'})
+                        print 'Discord Webhook response: ' + str(response)
+                else:
+                    ## send the msg to discord webhook
+                    myjson = '{"username": "GitHub-dashevo", "content": "' + msg + '"}'
+                    response = requests.post(
+                        webhook_url,
+                        myjson,
+                        headers={'Content-Type': 'application/json'})
+                    print 'Discord Webhook response: ' + str(response)
+
             print datetime.datetime.now()
-            print 'Discord Webhook response: ' + str(response)
+            
 
         firstRun = False
 
