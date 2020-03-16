@@ -41,10 +41,9 @@ while True:
         processedId = curId
 
         for item in data[::-1]:  # start with last element
-            # time.sleep(2)
+            time.sleep(1)
 
-            # if processedId >= long(item['id']):
-            if 11780129586 >= long(item['id']):
+            if processedId >= long(item['id']):
                 continue
             else:
                 curId = item['id']
@@ -74,9 +73,8 @@ while True:
                 msg += '**Commits:**' + '\\n'
                 for commit in item['payload']['commits']:
                     msg += ('**__Author__:**        ' +
-                            commit['author']['name'] + '\\n').decode('ascii')
-                    msg += ('**Message:**    ' + commit['message']).encode(
-                        'ascii', 'ignore').decode('ascii') + '\\n'
+                            commit['author']['name'] + '\\n')
+                    msg += ('**Message:**    ' + commit['message']) + '\\n'
                     msg += ('**Link:**             ' + 'https://github.com/' +
                             item['repo']['name'] + '/commit/' + commit['sha'] +
                             '\\n')
@@ -91,51 +89,42 @@ while True:
                         item['payload']['pull_request']['html_url'] + '\\n')
                 msg += ('**Title:**            ' +
                         item['payload']['pull_request']['title'] +
-                        '\\n').encode('ascii', 'ignore').decode('ascii')
+                        '\\n')
                 msg += ('**Body:**       ' +
-                        item['payload']['pull_request']['body']).encode(
-                            'ascii', 'ignore').decode('ascii').replace(
-                                '\r\n', '\\n') + '\\n'
+                        item['payload']['pull_request']['body']) + '\\n'
 
             if 'release' in item['payload']:
                 msg += ('**Link:**          ' +
                         item['payload']['release']['html_url'] + '\\n')
                 msg += ('**Name:**          ' +
-                        item['payload']['release']['name'] + '\\n').encode(
-                            'ascii', 'ignore').decode('ascii')
+                        item['payload']['release']['name'] + '\\n')
                 msg += ('**Body:**       ' +
-                        item['payload']['release']['body']).encode(
-                            'ascii', 'ignore').decode('ascii').replace(
-                                '\r\n', '\\n') + '\\n'
+                        item['payload']['release']['body']) + '\\n'
 
             if 'issue' in item['payload']:
                 msg += ('**Link:**          ' +
                         item['payload']['issue']['html_url'] + '\\n')
                 msg += ('**Title:**          ' +
-                        item['payload']['issue']['title'] + '\\n').encode(
-                            'ascii', 'ignore').decode('ascii')
+                        item['payload']['issue']['title'] + '\\n')
                 msg += ('**Body:**       ' +
-                        item['payload']['issue']['body']).encode(
-                            'ascii', 'ignore').decode('ascii').replace(
-                                '\r\n', '\\n') + '\\n'
+                        item['payload']['issue']['body']) + '\\n'
 
             ## PullRequestReviewCommentEvent
             if 'comment' in item['payload']:
                 msg += ('**Body:**            ' +
-                        item['payload']['comment']['body']).encode(
-                            'ascii', 'ignore').encode(
-                                'ascii', 'ignore').decode('ascii').replace(
-                                    '\r\n', '\\n').replace('"', '') + '\\n'
+                        item['payload']['comment']['body']) + '\\n'
                 msg += ('**Link:**            ' +
                         item['payload']['comment']['html_url'] + '\\n')
 
             msg += '**Created at:**  ' + item['created_at'] + '\\n'
+            
+            msg = msg.replace('"', '\\"').replace('\r\n', '\\n').encode('ascii', 'ignore').decode('ascii')
 
             ## Debug local
             # print '======================'
-            print ''
-            print msg
-            print ''
+            # print ''
+            # print msg
+            # print ''
 
             # exit()
 
