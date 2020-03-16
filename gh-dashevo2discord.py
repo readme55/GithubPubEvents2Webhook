@@ -17,7 +17,7 @@ f.close()
 
 modifiedSince = ''
 curId = 0
-firstRun = False  # set True to skip existing data
+firstRun = True  # set True to skip existing data
 
 while True:
     try:
@@ -118,7 +118,8 @@ while True:
 
             msg += '**Created at:**  ' + item['created_at'] + '\\n'
             
-            msg = msg.replace('"', '\\"').replace('\r\n', '\\n').encode('ascii', 'ignore').decode('ascii')
+            ## escape some special characters for json object
+            msg = msg.replace('"', '\\"').replace('\r\n', '\\n').replace('\n', '\\n').encode('ascii', 'ignore').decode('ascii')
 
             ## Debug local
             # print '======================'
