@@ -8,27 +8,43 @@ import datetime
 # src
 eventUrl = "https://api.github.com/users/dashevo/events/public"
 # dest  (non-public so i put it in file and .gitignore)
-f=open("./webhook.txt", "r")
+f = open("./webhook.txt", "r")
 if f.mode == 'r':
     webhook_url = f.read()
+f.close()
 
-data_cur = ''
-firstRun = True  # set True to skip existing data
+modifiedSince = ''
+curId = 0
+firstRun = False  # set True to skip existing data
 
 while True:
     try:
+
+        ## check if modified since last request (https://developer.github.com/v3/#conditional-requests)
+        cur_header = {'If-Modified-Since': modifiedSince}
+        response = requests.get(eventUrl, headers=cur_header)
+        header = response.headers
+        if modifiedSince != header['Last-Modified']:
+            modifiedSince = header['Last-Modified']
+        else:
+            time.sleep(60)  # only 60/hour api calls on github-events allowed
+            continue
+        
+        ## fetch github public events json file
         response = requests.get(eventUrl)
         print 'Github Public Events response: ' + str(response)
-        data_old = data_cur
-        data_cur = json.loads(response.content)
-        data_diff = diff(data_old, data_cur)
+        data = json.loads(response.content)
 
-        # if list is empty
-        if not data_diff:
-            time.sleep(61)  # only 60/hour api calls on github-events allowed
-            continue
+        ## use Id to check for updated events and skip already processed events
+        processedId = curId
 
-        for item in data_diff[::-1]:  # start with last element
+        for item in data[::-1]:  # start with last element
+
+            if processedId >= long(item['id']):
+                continue
+            else: 
+                curId = item['id']
+
             msg = ''
             msg += ('__**Type:**__            __' + item['type'] + '__' +
                     '\\n')
@@ -43,6 +59,7 @@ while True:
                     '\\n').encode('ascii', 'ignore').decode('ascii')
 
             ## PushEvent (recognize from 'payload' objects)
+            ## link is duplicate from one of the commits below
             # if 'head' in item['payload']:
             #     msg += '**Link:**        ' + 'https://github.com/' + \
             #         item['repo']['name'] + '/commit/' + \
@@ -52,19 +69,14 @@ while True:
             if 'commits' in item['payload']:
                 msg += '**Commits:**' + '\\n'
                 for commit in item['payload']['commits']:
-                    msg += ('**__Author__:**     ' +
-                            commit['author']['name']).decode('ascii')
-                    msg += ('**Message:**     ' + commit['message'] +
-                            '\\n').encode('ascii', 'ignore').decode('ascii')
-                    msg += ('**Link:**     ' + 'https://github.com/' +
+                    msg += ('**__Author__:**        ' +
+                            commit['author']['name'] + '\\n').decode('ascii')
+                    msg += ('**Message:**    ' + commit['message']).encode(
+                        'ascii', 'ignore').decode('ascii').replace(
+                            '\\', '\\\\') + '\\n'
+                    msg += ('**Link:**             ' + 'https://github.com/' +
                             item['repo']['name'] + '/commit/' + commit['sha'] +
                             '\\n')
-
-                    # msg += ('**Author:**     ' + item['payload']['commits'][0]['author']['name']
-                    #         ).decode('ascii')
-                    # msg += ('**Message:**     ' +
-                    #         item['payload']['commits'][0]['message'] + '\\n').encode(
-                    #             'ascii', 'ignore').decode('ascii')
 
             ## PullRequestEvent, ReleaseEvent, IssueCommentEvent
             if 'action' in item['payload']:
@@ -72,46 +84,53 @@ while True:
                         '\\n')
 
             if 'pull_request' in item['payload']:
-                msg += ('**Link:**       ' +
+                msg += ('**Link:**             ' +
                         item['payload']['pull_request']['html_url'] + '\\n')
-                msg += ('**Title:**       ' +
+                msg += ('**Title:**            ' +
                         item['payload']['pull_request']['title'] +
                         '\\n').encode('ascii', 'ignore').decode('ascii')
                 msg += ('**Body:**       ' +
-                        item['payload']['pull_request']['body'] +
-                        '\\n').encode('ascii', 'ignore').decode('ascii')
+                        item['payload']['pull_request']['body']).encode(
+                            'ascii', 'ignore').decode('ascii').replace(
+                                '\\', '\\\\') + '\\n'
 
             if 'release' in item['payload']:
-                msg += ('**Link:**       ' +
+                msg += ('**Link:**          ' +
                         item['payload']['release']['html_url'] + '\\n')
-                msg += ('**Name:**       ' +
+                msg += ('**Name:**          ' +
                         item['payload']['release']['name'] + '\\n').encode(
                             'ascii', 'ignore').decode('ascii')
                 msg += ('**Body:**       ' +
-                        item['payload']['release']['body'] + '\\n').encode(
-                            'ascii', 'ignore').decode('ascii')
+                        item['payload']['release']['body']).encode(
+                            'ascii', 'ignore').decode('ascii').replace(
+                                '\\', '\\\\') + '\\n'
 
             if 'issue' in item['payload']:
-                msg += ('**Link:**       ' +
+                msg += ('**Link:**          ' +
                         item['payload']['issue']['html_url'] + '\\n')
-                msg += ('**Title:**       ' +
+                msg += ('**Title:**          ' +
                         item['payload']['issue']['title'] + '\\n').encode(
                             'ascii', 'ignore').decode('ascii')
-                msg += ('**Body:**       ' + item['payload']['issue']['body'] +
-                        '\\n').encode('ascii', 'ignore').decode('ascii')
+                msg += ('**Body:**       ' +
+                        item['payload']['issue']['body']).encode(
+                            'ascii', 'ignore').decode('ascii').replace(
+                                '\\', '\\\\') + '\\n'
 
             ## PullRequestReviewCommentEvent
             if 'comment' in item['payload']:
                 msg += ('**Body:**            ' +
-                        item['payload']['comment']['body'] + '\\n').encode(
-                            'ascii', 'ignore').decode('ascii')
+                        item['payload']['comment']['body']).encode(
+                            'ascii', 'ignore').decode('ascii').replace(
+                                '\\', '\\\\') + '\\n'
                 msg += ('**Link:**            ' +
                         item['payload']['comment']['html_url'] + '\\n')
 
             msg += '**Created at:**  ' + item['created_at'] + '\\n'
 
             ## Debug local
+            # print '======================'
             # print msg
+            # exit()
 
             if firstRun == False:
                 myjson = '{"username": "GitHub-dashevo", "content": "' + msg + '"}'
