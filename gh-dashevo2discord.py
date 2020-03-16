@@ -18,7 +18,7 @@ firstRun = True  # set True to skip existing data
 while True:
     try:
         response = requests.get(eventUrl)
-        print 'Github Public Events response: ' + response
+        print 'Github Public Events response: ' + str(response)
         data_old = data_cur
         data_cur = json.loads(response.content)
         data_diff = diff(data_old, data_cur)
@@ -120,7 +120,7 @@ while True:
                     myjson,
                     headers={'Content-Type': 'application/json'})
             print datetime.datetime.now()
-            print 'Discord Webhook response: ' + response
+            print 'Discord Webhook response: ' + str(response)
 
         firstRun = False
 
