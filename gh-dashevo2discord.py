@@ -8,7 +8,7 @@ import datetime
 # src
 eventUrl = "https://api.github.com/users/dashevo/events/public"
 # dest  (non-public so i put it in file and .gitignore)
-f=open("webhook.txt", "r")
+f=open("./webhook.txt", "r")
 if f.mode == 'r':
     webhook_url = f.read()
 
@@ -18,7 +18,7 @@ firstRun = True  # set True to skip existing data
 while True:
     try:
         response = requests.get(eventUrl)
-
+        print 'Github Public Events response: ' + response
         data_old = data_cur
         data_cur = json.loads(response.content)
         data_diff = diff(data_old, data_cur)
@@ -120,7 +120,7 @@ while True:
                     myjson,
                     headers={'Content-Type': 'application/json'})
             print datetime.datetime.now()
-            print response
+            print 'Discord Webhook response: ' + response
 
         firstRun = False
 
