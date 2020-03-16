@@ -133,9 +133,9 @@ while True:
                 if len(msg) > 2000:
                     m = (len(msg) / 2000) + 1
                     for i in xrange(1, m):
-                        time.sleep(1)
+                        time.sleep(10)
                         myjson = '{"username": "GitHub-dashevo", "content": "' + msg[
-                            ((i - 1) * 2000):(i * 2000)] + '"}'
+                            ((i - 1) * 2000):((i * 2000)-1)] + '"}'
                         response = requests.post(
                             webhook_url,
                             myjson,
