@@ -17,31 +17,36 @@ f.close()
 
 modifiedSince = ''
 curId = 0
-firstRun = True  # set True to skip existing data
+firstRun = False  # set True to skip existing data
 
 while True:
     try:
 
         ## check if modified since last request (https://developer.github.com/v3/#conditional-requests)
-        cur_header = {'If-Modified-Since': modifiedSince}
-        response = requests.get(eventUrl, headers=cur_header)
-        header = response.headers
-        if modifiedSince != header['Last-Modified']:
-            modifiedSince = header['Last-Modified']
-        else:
-            time.sleep(60)  # only 60/hour api calls on github-events allowed
-            continue
+        # cur_header = {'If-Modified-Since': modifiedSince}
+        # response = requests.get(eventUrl, headers=cur_header)
+        # header = response.headers
+        # if modifiedSince != header['Last-Modified']:
+        #     modifiedSince = header['Last-Modified']
+        # else:
+        #     time.sleep(60)  # only 60/hour api calls on github-events allowed
+        #     continue
 
         ## fetch github public events json file
-        response = requests.get(eventUrl)
-        print 'Github Public Events response: ' + str(response)
-        data = json.loads(response.content)
+        # response = requests.get(eventUrl)
+        # print 'Github Public Events response: ' + str(response)
+        # data = json.loads(response.content)
+
+        f = open("./dashevo-problem.json", "r")
+        if f.mode == 'r':
+            data = json.loads(f.read())
+        f.close()
 
         ## use Id to check for updated events and skip already processed events
         processedId = curId
 
         for item in data[::-1]:  # start with last element
-            time.sleep(1)
+            # time.sleep(2)
 
             if processedId >= long(item['id']):
                 continue
@@ -118,9 +123,19 @@ while True:
             msg += '**Created at:**  ' + item['created_at'] + '\\n'
 
             ## escape some special characters for json object
-            msg = msg.replace('"', '\\"').replace('\r\n', '\\n').replace(
-                '\n', '\\n').encode('ascii', 'ignore').decode('ascii')
+            # msg = msg.replace('\r\n', '\\n').replace('\n\n', '\\n').replace('\n', '\\n').replace('"', '\\"').replace("'", '').replace('|', '').replace('*', '').replace('#', '').encode('ascii', 'xmlcharrefreplace') #.decode('ascii')
+            # msg = msg.replace('\r\n', '\\n').replace('\n\n', '\\n').replace('\n', '\\n').replace('"', '\\"').replace("'", '').replace('|', '').replace('*', '').replace('#', '').encode('ascii', 'backslashreplace') #.decode('ascii')
+            
+            # following is needed to get rid of newline in the result (response [400] problem)
+            # msg = msg.replace('\\', '\\\\')
 
+
+            ## NOTE: replace('\n', '\\n') will replace "\n" with "\\n" (so no escaping with \n or \r)
+            # msg = msg.replace('\r\n', '\\n').replace('\n\n', '\\n').replace('\n', '\\n').replace('"', '\\"').encode('ascii', 'xmlcharrefreplace')
+            # msg = msg.replace('\r\n', '\\n').replace('\n\n', '\\n').replace('\n', '\\n').replace('"', '\\"').encode('ascii', 'xmlcharrefreplace')
+            # msg = msg.replace('\r\n', '\\n').replace('\n\n', '\\n').replace('\n', '\\n')
+            msg = msg.replace('\r\n', '\\n').replace('\n\n', '\\n').replace('\n', '\\n').encode('ascii', 'ignore').decode('ascii')
+            
             ## Debug local
             # print '======================'
             # print ''
@@ -130,34 +145,36 @@ while True:
 
             if firstRun == False:
                 ## check if msg lenght > 2000 (max discord content chars) - cheers devs! :D
-                if len(msg) > 2000:
-                    m = (len(msg) / 2000) + 1
-                    for i in xrange(1, m):
-                        time.sleep(10)
-                        myjson = '{"username": "GitHub-dashevo", "content": "' + msg[
-                            ((i - 1) * 2000):((i * 2000)-1)] + '"}'
+                if len(msg) > 1999:
+                    m = (len(msg) / 1999) + 2
+                    n = (len(msg) % 1999)
+                    for i in xrange(1, m):  #eg. xrange(1,6) will include 1 and exclude 6
+                        time.sleep(1)
+                        deltaMsg = msg[((i - 1) * 1999):(((i) * 1999))]
+                        print deltaMsg
+                        myjson = '{"username": "GitHub-dashevo", "content": "' + deltaMsg + '"}'
                         response = requests.post(
                             webhook_url,
                             myjson,
                             headers={'Content-Type': 'application/json'})
                         print 'Discord Webhook response: ' + str(response)
-                else:
+                # else:
                     ## send the msg to discord webhook
-                    myjson = '{"username": "GitHub-dashevo", "content": "' + msg + '"}'
-                    response = requests.post(
-                        webhook_url,
-                        myjson,
-                        headers={'Content-Type': 'application/json'})
-                    print 'Discord Webhook response: ' + str(response)
+                    # myjson = '{"username": "GitHub-dashevo", "content": "' + msg + '"}'
+                    # response = requests.post(
+                    #     webhook_url,
+                    #     myjson,
+                    #     headers={'Content-Type': 'application/json'})
+                    # print 'Discord Webhook response: ' + str(response)
 
-            print datetime.datetime.now()
+            # print datetime.datetime.now()
             
 
         firstRun = False
 
-    except TypeError:
-        print("TypeError: prob API limit exceed! Sleeping 61 min")
-        time.sleep(3660)
+    # except TypeError:
+    #     print("TypeError: prob API limit exceed! Sleeping 61 min")
+    #     time.sleep(3660)
     except KeyboardInterrupt:
         print("KeyboardInterrupt: Goodbye")
         exit()
