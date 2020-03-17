@@ -50,10 +50,11 @@ while True:
         for item in data[::-1]:     # start with last element (earliest date)
             time.sleep(3)           # http 429 error if too many/fast requests
 
-            if processedId >= long(item['id']):     # check for new event by comparing id's
+            if long(processedId) >= long(item['id']):     # check for new event by comparing id's
                 continue
             else:
                 curId = item['id']      # new event to process, save newest id
+                # print 'processing'
 
             msg = ''
             msg += ('__**Type:**__            __' + item['type'] + '__' +
