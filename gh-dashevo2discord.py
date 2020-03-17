@@ -159,11 +159,11 @@ while True:
                             print 'Error http status code: ' + response.status_code
                             print ''
                             print deltaMsg
-                        myjson = '{"username": "GitHub-dashevo", "content": "' + "Error status: " + response.status_code + " - Hello, im a bug. Come and find me! gh-repo in channel topic!" + '"}'
-                        response = requests.post(
-                            webhook_url,
-                            myjson,
-                            headers={'Content-Type': 'application/json'})
+                            myjson = '{"username": "GitHub-dashevo", "content": "' + "Error status: " + str(response.status_code) + " - Hello, im a bug. Come and find me! gh-repo in channel topic!" + '"}'
+                            response = requests.post(
+                                webhook_url,
+                                myjson,
+                                headers={'Content-Type': 'application/json'})
                         ####################
                 else:
                     ## send the msg to discord webhook
@@ -178,11 +178,11 @@ while True:
                         print 'Error http status code: ' + response.status_code
                         print ''
                         print msg
-                    myjson = '{"username": "GitHub-dashevo", "content": "' + "Error status: " + response.status_code + " - Hello, im a bug. Come and find me! gh-repo in channel topic!" + '"}'
-                    response = requests.post(
-                        webhook_url,
-                        myjson,
-                        headers={'Content-Type': 'application/json'})
+                        myjson = '{"username": "GitHub-dashevo", "content": "' + "Error status: " + str(response.status_code) + " - Hello, im a bug. Come and find me! gh-repo in channel topic!" + '"}'
+                        response = requests.post(
+                            webhook_url,
+                            myjson,
+                            headers={'Content-Type': 'application/json'})
                     ###################
 
             print datetime.datetime.now()
