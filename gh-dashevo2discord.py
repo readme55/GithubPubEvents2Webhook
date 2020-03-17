@@ -29,6 +29,7 @@ while True:
         if modifiedSince != header['Last-Modified']:
             modifiedSince = header['Last-Modified']
         else:
+            print("."),
             time.sleep(60)  # only 60/hour api calls on github-events allowed
             continue
 
@@ -37,16 +38,23 @@ while True:
         print 'Github Public Events response: ' + str(response)
         data = json.loads(response.content)
 
+        ## chasing some bug, saved local json
+        # f = open("./dashevo-problem.json", "r")
+        # if f.mode == 'r':
+        #     data = json.loads(f.read())
+        # f.close()
+        ##################
+
         ## use Id to check for updated events and skip already processed events
         processedId = curId
 
-        for item in data[::-1]:  # start with last element
-            time.sleep(1)
+        for item in data[::-1]:     # start with last element (earliest date)
+            time.sleep(3)           # http 429 error if too many/fast requests
 
-            if processedId >= long(item['id']):
+            if processedId >= long(item['id']):     # check for new event by comparing id's
                 continue
             else:
-                curId = item['id']
+                curId = item['id']      # new event, save newest id
 
             msg = ''
             msg += ('__**Type:**__            __' + item['type'] + '__' +
@@ -120,6 +128,11 @@ while True:
             ## escape some special characters for json object
             msg = msg.replace('"', '\\"').replace('\r\n', '\\n').replace(
                 '\n', '\\n').encode('ascii', 'ignore').decode('ascii')
+            
+            ## test
+            # msg = msg.replace('"', '\\"').replace('\r\n', '\\n').replace(
+            #     '\n\n', '\\n').replace('\n', '\\n').encode('ascii', 'ignore').decode('ascii')
+
 
             ## Debug local
             # print '======================'
@@ -130,12 +143,12 @@ while True:
 
             if firstRun == False:
                 ## check if msg lenght > 2000 (max discord content chars) - cheers devs! :D
-                if len(msg) > 2000:
-                    m = (len(msg) / 2000) + 1
-                    for i in xrange(1, m):
-                        time.sleep(10)
+                if len(msg) > 1999:
+                    m = (len(msg) / 1999) + 2   # split msg into m parts
+                    for i in xrange(1, m):      # eg. xrange(1,6) will include 1 and exclude 6
+                        time.sleep(10)          # http error 429 if too many/fast requests
                         myjson = '{"username": "GitHub-dashevo", "content": "' + msg[
-                            ((i - 1) * 2000):((i * 2000)-1)] + '"}'
+                            ((i - 1) * 1999):(i * 1999)] + '"}'
                         response = requests.post(
                             webhook_url,
                             myjson,
@@ -151,7 +164,6 @@ while True:
                     print 'Discord Webhook response: ' + str(response)
 
             print datetime.datetime.now()
-            
 
         firstRun = False
 
