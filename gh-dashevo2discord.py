@@ -83,9 +83,16 @@ while True:
                     msg += ('**__Author__:**        ' +
                             commit['author']['name'] + '\\n')
                     msg += ('**Message:**    ' + commit['message']) + '\\n'
-                    msg += ('**Link:**             ' + 'https://github.com/' +
+                    msg += ('**Link:**             ' + '<https://github.com/' +
                             item['repo']['name'] + '/commit/' + commit['sha'] +
-                            '\\n')
+                            '>\\n')
+
+            ## PullRequestReviewCommentEvent
+            if 'comment' in item['payload']:
+                msg += ('**Body:**            ' +
+                        item['payload']['comment']['body']) + '\\n'
+                msg += ('**Link:**            ' + '<' +
+                        item['payload']['comment']['html_url'] + '>\\n')
 
             ## PullRequestEvent, ReleaseEvent, IssueCommentEvent
             if 'action' in item['payload']:
@@ -93,35 +100,28 @@ while True:
                         '\\n')
 
             if 'pull_request' in item['payload']:
-                msg += ('**Link:**             ' +
-                        item['payload']['pull_request']['html_url'] + '\\n')
+                msg += ('**Link:**             ' + '<' +
+                        item['payload']['pull_request']['html_url'] + '>\\n')
                 msg += ('**Title:**            ' +
                         item['payload']['pull_request']['title'] + '\\n')
                 msg += ('**Body:**       ' +
                         item['payload']['pull_request']['body']) + '\\n'
 
             if 'release' in item['payload']:
-                msg += ('**Link:**          ' +
-                        item['payload']['release']['html_url'] + '\\n')
+                msg += ('**Link:**          ' + '<' +
+                        item['payload']['release']['html_url'] + '>\\n')
                 msg += ('**Name:**          ' +
                         item['payload']['release']['name'] + '\\n')
                 msg += ('**Body:**       ' +
                         item['payload']['release']['body']) + '\\n'
 
             if 'issue' in item['payload']:
-                msg += ('**Link:**          ' +
-                        item['payload']['issue']['html_url'] + '\\n')
+                msg += ('**Link:**          ' + '<' +
+                        item['payload']['issue']['html_url'] + '>\\n')
                 msg += ('**Title:**          ' +
                         item['payload']['issue']['title'] + '\\n')
                 msg += ('**Body:**       ' +
                         item['payload']['issue']['body']) + '\\n'
-
-            ## PullRequestReviewCommentEvent
-            if 'comment' in item['payload']:
-                msg += ('**Body:**            ' +
-                        item['payload']['comment']['body']) + '\\n'
-                msg += ('**Link:**            ' +
-                        item['payload']['comment']['html_url'] + '\\n')
 
             msg += '**Created at:**  ' + item['created_at'] + '\\n'
 
