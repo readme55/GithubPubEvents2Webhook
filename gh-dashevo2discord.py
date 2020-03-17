@@ -12,8 +12,7 @@ f = open("./webhook.txt", "r")
 if f.mode == 'r':
     webhook_url = f.read()
 f.close()
-
-# webhook_url = ""
+webhook_url = webhook_url.replace('\n', '')     ## needed for linux, not for windows
 
 modifiedSince = ''
 curId = 0
@@ -147,13 +146,19 @@ while True:
                     m = (len(msg) / 1999) + 2   # split msg into m parts
                     for i in xrange(1, m):      # eg. xrange(1,6) will include 1 and exclude 6
                         time.sleep(10)          # http error 429 if too many/fast requests
-                        myjson = '{"username": "GitHub-dashevo", "content": "' + msg[
-                            ((i - 1) * 1999):(i * 1999)] + '"}'
+                        deltaMsg = msg[((i - 1) * 1999):(i * 1999)]
+                        myjson = '{"username": "GitHub-dashevo", "content": "' + deltaMsg + '"}'
                         response = requests.post(
                             webhook_url,
                             myjson,
                             headers={'Content-Type': 'application/json'})
                         print 'Discord Webhook response: ' + str(response)
+                        ## error logging
+                        if response.status_code != 204:
+                            print 'Error http status code: ' + response.status_code
+                            print ''
+                            print deltaMsg
+                        #################
                 else:
                     ## send the msg to discord webhook
                     myjson = '{"username": "GitHub-dashevo", "content": "' + msg + '"}'
@@ -161,7 +166,13 @@ while True:
                         webhook_url,
                         myjson,
                         headers={'Content-Type': 'application/json'})
+                    ## error logging
                     print 'Discord Webhook response: ' + str(response)
+                    if response.status_code != 204:
+                            print 'Error http status code: ' + response.status_code
+                            print ''
+                            print msg
+                    ################
 
             print datetime.datetime.now()
 
