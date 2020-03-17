@@ -53,7 +53,7 @@ while True:
             if processedId >= long(item['id']):     # check for new event by comparing id's
                 continue
             else:
-                curId = item['id']      # new event, save newest id
+                curId = item['id']      # new event to process, save newest id
 
             msg = ''
             msg += ('__**Type:**__            __' + item['type'] + '__' +
@@ -143,8 +143,8 @@ while True:
             if firstRun == False:
                 ## check if msg lenght > 2000 (max discord content chars) - cheers devs! :D
                 if len(msg) > 1999:
-                    m = (len(msg) / 1999) + 2   # split msg into m parts
-                    for i in xrange(1, m):      # eg. xrange(1,6) will include 1 and exclude 6
+                    m = (len(msg) / 1999) + 1   # split msg into m parts
+                    for i in xrange(1, m+1):    # eg. xrange(1,6) will include 1 and exclude 6
                         time.sleep(10)          # http error 429 if too many/fast requests
                         deltaMsg = msg[((i - 1) * 1999):(i * 1999)]
                         myjson = '{"username": "GitHub-dashevo", "content": "' + deltaMsg + '"}'
@@ -158,7 +158,12 @@ while True:
                             print 'Error http status code: ' + response.status_code
                             print ''
                             print deltaMsg
-                        #################
+                        myjson = '{"username": "GitHub-dashevo", "content": "' + "Error status: " + response.status_code + " - Hello, im a bug. Come and find me! gh-repo in channel topic!" + '"}'
+                        response = requests.post(
+                            webhook_url,
+                            myjson,
+                            headers={'Content-Type': 'application/json'})
+                        ####################
                 else:
                     ## send the msg to discord webhook
                     myjson = '{"username": "GitHub-dashevo", "content": "' + msg + '"}'
@@ -169,18 +174,23 @@ while True:
                     ## error logging
                     print 'Discord Webhook response: ' + str(response)
                     if response.status_code != 204:
-                            print 'Error http status code: ' + response.status_code
-                            print ''
-                            print msg
-                    ################
+                        print 'Error http status code: ' + response.status_code
+                        print ''
+                        print msg
+                    myjson = '{"username": "GitHub-dashevo", "content": "' + "Error status: " + response.status_code + " - Hello, im a bug. Come and find me! gh-repo in channel topic!" + '"}'
+                    response = requests.post(
+                        webhook_url,
+                        myjson,
+                        headers={'Content-Type': 'application/json'})
+                    ###################
 
             print datetime.datetime.now()
 
         firstRun = False
 
     except TypeError:
-        print("TypeError: prob API limit exceed! Sleeping 61 min")
-        time.sleep(3660)
+        print("TypeError")
+        # time.sleep(3601)  # for API limit exceed, but shouldnt happen with conditional requests
     except KeyboardInterrupt:
         print("KeyboardInterrupt: Goodbye")
         exit()
