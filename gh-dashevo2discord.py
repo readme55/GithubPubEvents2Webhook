@@ -130,17 +130,15 @@ while True:
 
             # escape some special characters for json object
             msg = msg.replace('"', '\\"').replace('\r\n', '\\n').replace(
-                '\n', '\\n').encode('ascii', 'ignore').decode('ascii')
+                '\n', '\\n').replace('\t', '\\t').encode('ascii', 'ignore').decode('ascii')
 
-            # test
-            # msg = msg.replace('"', '\\"').replace('\r\n', '\\n').replace(
-            #     '\n\n', '\\n').replace('\n', '\\n').encode('ascii', 'ignore').decode('ascii')
 
             # Debug local
             # print '======================'
             # print ''
-            # print msg
+            # print repr(msg)   # print raw msg
             # print ''
+            # print msg
             # exit()
 
             if firstRun == False:
@@ -190,8 +188,6 @@ while True:
                     if response.status_code != 204:  # TODO 400 is bad request, else is not bug
                         print 'Error http status code: ' + str(
                             response.status_code)
-                        print ''
-                        print msg
                         errMsg = "########################\\nHTTP Error: " + str(
                             response.status_code
                         ) + "\\nEvent id: " + str(
