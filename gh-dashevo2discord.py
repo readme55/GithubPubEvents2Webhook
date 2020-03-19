@@ -16,6 +16,12 @@ if f.mode == 'r':
 f.close()
 webhook_url = webhook_url.replace('\n',
                                   '')  # needed for linux, not for windows
+# count commits
+endTime = "01:00"
+cntMasterCommit = 0
+cntOtherCommit = 0
+commitMasterList = []
+commitOtherList = []
 
 modifiedSince = ''
 curId = 0
@@ -23,6 +29,27 @@ firstRun = True  # set True to skip existing data
 
 while True:
     try:
+        ## output statistic:
+        if str(datetime.datetime.now())[11:16] == endTime:
+            msgStats = "**Daily Commit Statistic on Master: " + str(
+                cntMasterCommit) + "\\n"
+            for item in list(dict.fromkeys(
+                    commitMasterList)):  # remove duplicates with dict
+                msgStats += '   ' + item + "\\n"
+            msgStats += "Daily Commit Statistic on any other Branch: " + str(
+                cntOtherCommit) + "\\n"
+            for item in list(dict.fromkeys(commitOtherList)):
+                msgStats += '   ' + item + "\\n"
+            msgStats += "**"
+            cntMasterCommit = 0
+            cntOtherCommit = 0
+            commitMasterList = []
+            commitOtherList = []
+            myjson = '{"username": "GitHub-dashevo", "content": "' + msgStats + '"}'
+            response = requests.post(
+                webhook_url,
+                myjson,
+                headers={'Content-Type': 'application/json'})
 
         # check if modified since last request (https://developer.github.com/v3/#conditional-requests)
         cur_header = {'If-Modified-Since': modifiedSince}
@@ -72,13 +99,8 @@ while True:
             msg += ('**Actor:**           ' + item['actor']['login'] +
                     '\\n').encode('ascii', 'ignore').decode('ascii')
 
-            # PushEvent (recognize from 'payload' objects)
-            # link is duplicate from one of the commits below
-            # if 'head' in item['payload']:
-            #     msg += '**Link:**        ' + 'https://github.com/' + \
-            #         item['repo']['name'] + '/commit/' + \
-            #         item['payload']['head'] + '\\n'
-
+            ## PushEvent (recognize from 'payload' objects)
+            # item['payload']['head'] is duplicate from one of the commits below
             # (Multiple) Commit messages (Author Name + Message + HTML Link)
             if 'commits' in item['payload']:
                 msg += '**Commits:**' + '\\n'
@@ -89,6 +111,17 @@ while True:
                     msg += ('**Link:**             ' + '<https://github.com/' +
                             item['repo']['name'] + '/commit/' + commit['sha'] +
                             '>\\n')
+                    ## Statistics
+                    # count Master commits
+                    if item['payload']['ref'] == "refs/heads/master" or item[
+                            'payload']['ref'] == "master":
+                        cntMasterCommit += 1
+                        commitMasterList.append(item['repo']['name'])
+                    # count any other commits
+                    else:
+                        cntOtherCommit += 1
+                        commitOtherList.append(item['repo']['name'] + " : " +
+                                               item['payload']['ref'])
 
             # PullRequestReviewCommentEvent
             if 'comment' in item['payload']:
@@ -130,8 +163,9 @@ while True:
 
             # escape some special characters for json object
             msg = msg.replace('"', '\\"').replace('\r\n', '\\n').replace(
-                '\n', '\\n').replace('\t', '\\t').encode('ascii', 'ignore').decode('ascii')
-
+                '\n', '\\n').replace('\t',
+                                     '\\t').encode('ascii',
+                                                   'ignore').decode('ascii')
 
             # Debug local
             # print '======================'
@@ -157,7 +191,7 @@ while True:
                             myjson,
                             headers={'Content-Type': 'application/json'})
                         print 'Discord Webhook response: ' + str(response)
-                        # error logging
+                        ## error logging
                         if response.status_code != 204:
                             print 'Error http status code: ' + str(
                                 response.status_code)
@@ -175,7 +209,7 @@ while True:
                                 headers={'Content-Type': 'application/json'})
                         ####################
                 else:
-                    # send the msg to discord webhook
+                    ## send the msg to discord webhook
                     myjson = '{"username": "GitHub-dashevo", "content": "' + msg + '"}'
 
                     response = requests.post(
@@ -183,7 +217,7 @@ while True:
                         myjson,
                         headers={'Content-Type': 'application/json'})
 
-                    # error logging
+                    ## error logging
                     print 'Discord Webhook response: ' + str(response)
                     if response.status_code != 204:  # TODO 400 is bad request, else is not bug
                         print 'Error http status code: ' + str(
