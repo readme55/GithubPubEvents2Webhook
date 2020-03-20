@@ -17,7 +17,7 @@ f.close()
 webhook_url = webhook_url.replace('\n',
                                   '')  # needed for linux, not for windows
 # count commits
-endTime = "01:00"
+endTime = "23:00"
 cntMasterCommit = 0
 cntOtherCommit = 0
 commitMasterList = []
