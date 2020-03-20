@@ -88,7 +88,7 @@ while True:
             if 'ref' in item['payload']:
                 msg += ('**Ref:**                ' + item['payload']['ref'] + '\\n')
 
-            msg += ('**Actor:**           ' + item['actor']['login'] + '\\n').encode('ascii', 'ignore').decode('ascii')
+            msg += ('**Actor:**           ' + item['actor']['login'] + '\\n')
 
             # PushEvent (recognize from 'payload' objects)
             # item['payload']['head'] is duplicate from one of the commits below
@@ -137,6 +137,7 @@ while True:
 
             # escape some special characters for json object
             msg = msg.replace('"', '\\"').replace('\r\n', '\\n').replace('\n', '\\n').replace('\t', '\\t').encode('ascii', 'ignore').decode('ascii')
+            # msg = msg.replace('\\\\', '\\').replace('"', '\\"').replace('\r\n', '\\n').replace('\n', '\\n').replace('\t', '\\t').encode()
 
             # Debug local
             # print '======================'
@@ -160,7 +161,7 @@ while True:
                         if response.status_code != 204:
                             print 'Error http status code: ' + str(response.status_code)
                             print ''
-                            print deltaMsg
+                            print repr(deltaMsg)
                             errMsg = "########################\\nHTTP Error: " + str(response.status_code) + "\\nEvent id: " + str(
                                 curId) + "\\nHello, im a bug. Come and find me! https://github.com/readme55/GithubPubEvents2Webhook\\n" + "########################\\n"
                             myjson = '{"username": "GitHub-dashevo", "content": "' + errMsg + '"}'
@@ -176,6 +177,8 @@ while True:
                     print 'Discord Webhook response: ' + str(response)
                     if response.status_code != 204:  # TODO 400 is bad request, else is not bug
                         print 'Error http status code: ' + str(response.status_code)
+                        print ''
+                        print repr(msg)
                         errMsg = "########################\\nHTTP Error: " + str(response.status_code) + "\\nEvent id: " + str(
                             curId) + "\\nHello, im a bug. Come and find me! https://github.com/readme55/GithubPubEvents2Webhook\\n" + "########################\\n"
 
