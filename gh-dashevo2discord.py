@@ -31,13 +31,14 @@ while True:
     try:
         # output statistic:
         if str(datetime.datetime.now())[11:16] == endTime:
-            msgStats = "**Daily Commit Summary on Master: " + str(cntMasterCommit) + "\\n"
+            msgStats = "##################################"
+            msgStats += "**__Daily Commit Summary on Master:__** " + str(cntMasterCommit) + "\\n"
             for item in list(dict.fromkeys(commitMasterList)):  # remove duplicates with dict
                 msgStats += '   ' + item + "\\n"
-            msgStats += "Daily Commit Summary on any other Branch: " + str(cntOtherCommit) + "\\n"
+            msgStats += "**__Daily Commit Summary on any other Branch:__** " + str(cntOtherCommit) + "\\n"
             for item in list(dict.fromkeys(commitOtherList)):
                 msgStats += '   ' + item + "\\n"
-            msgStats += "**"
+            msgStats += "##################################"
             cntMasterCommit = 0
             cntOtherCommit = 0
             commitMasterList = []
