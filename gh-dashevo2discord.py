@@ -31,7 +31,7 @@ while True:
     try:
         # output statistic:
         if str(datetime.datetime.now())[11:16] == endTime:
-            msgStats = "##################################"
+            msgStats = "##################################\\n"
             msgStats += "**__Daily Commit Summary on Master:__** " + str(cntMasterCommit) + "\\n"
             for item in list(dict.fromkeys(commitMasterList)):  # remove duplicates with dict
                 msgStats += '   ' + item + "\\n"
@@ -194,7 +194,10 @@ while True:
         firstRun = False
 
     except TypeError:
-        print("TypeError")
+        print("############## TypeError ##############")
+        continue
+    except KeyError:
+        print("############## KeyError ##############")
         continue
     except KeyboardInterrupt:
         print("KeyboardInterrupt: Goodbye")
